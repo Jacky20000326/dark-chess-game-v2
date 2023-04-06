@@ -4,17 +4,19 @@
         <div
             class="player"
             :class="[{ play1Flag: Play1State.state }]"
-            :style="{ color: Play1State.camp }"
+            
         >
             Play1 : 0
+            <div class="player1-cube" :style="{ backgroundColor: Play1State.camp }"></div>
         </div>
 
         <div
             class="player"
             :class="[{ play2Flag: Play2State.state }]"
-            :style="{ color: Play2State.camp }"
+            
         >
             0: Play2
+            <div class="player2-cube" :style="{ backgroundColor: Play2State.camp }"></div>
         </div>
     </div>
 </template>
@@ -47,6 +49,25 @@ h1 {
     font-weight: 200;
     color: #ffffff;
     text-shadow: 1px 1px 2px rgb(45, 45, 45);
+    position: relative;
+}
+.player1-cube{
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    top: 0px;
+    left: -25%;
+    border-radius: 50% ;
+    border: 2px solid #ffffff;
+}
+.player2-cube{
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    border: 2px solid #ffffff;
+    top: 0px;
+    right: -25%;
+    border-radius: 50% ;
 }
 .play1Flag {
     background-image: url("../../public/flag.png");
