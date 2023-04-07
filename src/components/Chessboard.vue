@@ -9,8 +9,10 @@
                     class="chessboard-block"
                     :key="index"
                     @click="chessHandler(item)"
+                   
                 >
                     <img
+                        v-show="item.state != 'none'"
                         :src="getChessUrl(item.imageIndex, item.state)"
                         :class="{ isActive: item.isChoose }"
                         alt=""
@@ -32,7 +34,7 @@ import { ChessFlyweightFactory } from "../Store/ChessImageStore.js";
 // import { ChessCloseState } from "../Store/ChessStore";
 import { onBeforeMount, ref,computed } from "vue";
 import { PlayerStore, Context, Player1, Player2 } from "../Store/PlayerState";
-import { GameStore,ChoseSameCampChess,Request,EatChess } from '../Store/GameStore';
+import { HeadHandler,GameStore,ChoseSameCampChess,Request,EatChess,MoveRule } from '../Store/GameStore';
 let AllChess = ref(null);
 
 // 取得play1、play2 的狀態
@@ -54,9 +56,15 @@ let ConcreteContextPlayer1 = new Context(Play1State.value);
 let ConcreteContextPlayer2 = new Context(Play2State.value);
 // 取得遊戲狀態
 let concreteGameStore = ref(new GameStore())
+// 規則(職責鏈)實體化
+let concreteChoseSameCampChess = new ChoseSameCampChess()
+let ConcreteEatChess = new EatChess()
+let ConcreteMoveRules = new MoveRule()
+let ConcreteHeadHandler = new HeadHandler()
+
 // concrete 遊戲中的職責鏈
 
-let concreteChoseSameCampChess = new ChoseSameCampChess()
+
 // 玩家交換
 
 const getChessUrl = (index, isOpenState) => {
@@ -73,15 +81,15 @@ const switchPlayer = () => {
 };
 
 // 點選棋子
-const chessHandler = (chess) => {
+const chessHandler = (chess,chessLocationIndex) => {
     // 取得首次玩家camp
     SetCamp(chess);
+    CompareCamp(chess,chessLocationIndex)
 
-    CompareCamp(chess)
 };
 
 // 玩家選陣營(camp)
-const SetCamp = (chess) => {
+const SetCamp = (chess,) => {
     if (chess.belong == "red") {
         Play1State.value.SetCamp("red");
         Play2State.value.SetCamp("blue");
@@ -96,29 +104,24 @@ const SetCamp = (chess) => {
 // 判斷玩家的陣營與所選是否相同及判斷chess.state
 const CompareCamp = (chess) => {
     // concrete 遊戲中的職責鏈
-    let GetRequest = new Request(currPlayer.value,chess,concreteGameStore.value)
+    let GetRequest = new Request(currPlayer.value,chess,concreteGameStore.value,AllChess.value)
     resetAllChessState()
     
     if(chess.state == 'close'){
         chess.ConcreteOpen();
         switchPlayer();
+        concreteGameStore.value.ResetpreChooseChess()
         return
     }
 
-    concreteChoseSameCampChess.SetCondition(new EatChess())
-    concreteChoseSameCampChess.HandleRequest(GetRequest)
-    // console.log({currPlayer:GetRequest.currPlayer.value})
-    // console.log({preChooseChess:GetRequest.preChooseChess})
+    ConcreteHeadHandler.SetCondition(concreteChoseSameCampChess)
+    concreteChoseSameCampChess.SetCondition(ConcreteMoveRules)
+    ConcreteMoveRules.SetCondition(ConcreteEatChess)
 
-    // if (currPlayer.value.camp != chess.belong) {
-    //     alert(`要選${currPlayer.value.camp}的棋`);
-    //     return;
-    // }
-    // chess.ConCreteSetChoose();
+    ConcreteHeadHandler.HandleRequest(GetRequest)
    
-    // 儲存當前選取棋子
-    // concreteGameStore.value.SetpreChooseChess(chess)
-     // 儲存將被比較的棋子
+
+
 
 };
 // 將所有棋子狀態改為close
@@ -132,6 +135,7 @@ const resetAllChessState = ()=>{
 onBeforeMount(() => {
     let result = initChessInfo();
     AllChess.value = result;
+
 });
 </script>
 

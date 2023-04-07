@@ -20,14 +20,14 @@ export class ChessInfo {
     ConcreteOpen() {
         this.stage.Open();
     }
-    ConcreteMove() {
-        this.stage.Move();
+    ConcreteMove(getAllChess) {
+        this.stage.Move(getAllChess);
     }
     ConcreteBeingInvaded() {
         this.stage.BeingInvaded();
     }
-    ConcreteAggressive() {
-        this.stage.Aggressive();
+    ConcreteAggressive(preChess, getAllChess) {
+        this.stage.Aggressive(preChess, getAllChess);
     }
     ConCreteSetChoose() {
         this.stage.SetChoose();
@@ -169,14 +169,28 @@ export class ChessOpenStage extends Stage {
     Open() {
         console.log("已經打開了");
     }
-    Move() {
-        console.log("移動");
+    Move(targetChess, compareChess) {
+        let temp = this.imageIndexArr[compareChess];
+        this.imageIndexArr[compareChess] = this.imageIndexArr[targetChess];
+        this.imageIndexArr[targetChess] = temp;
     }
     BeingInvaded() {
         console.log("被佔領");
     }
-    Aggressive() {
-        console.log("已佔領別人");
+    Aggressive(preChess, getAllChess) {
+        if (this.chess.rank > preChess.rank) {
+            let PreChessIndex = getAllChess.findIndex((item) => item.id == preChess.id);
+            let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+            console.log(getAllChess[PreChessIndex]);
+            console.log(getAllChess[CurrChessResultIndex]);
+            let temp = getAllChess[PreChessIndex];
+            getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
+            getAllChess[CurrChessResultIndex] = temp;
+            this.chess.state = "none";
+            this.chess.ConcreteSetStage(new ChessNoneStage(this.chess));
+        } else {
+            alert("Cannot eat a chess piece bigger than oneself");
+        }
     }
     SetChoose() {
         this.chess.isChoose = true;
