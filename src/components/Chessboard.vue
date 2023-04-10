@@ -33,13 +33,14 @@ import { initChessInfo } from "../Store/initChess";
 import { ChessFlyweightFactory } from "../Store/ChessImageStore.js";
 // import { ChessCloseState } from "../Store/ChessStore";
 import { onBeforeMount, ref,computed } from "vue";
-import { PlayerStore, Context, Player1, Player2 } from "../Store/PlayerState";
-import { HeadHandler,GameStore,ChoseSameCampChess,Request,EatChess,MoveRule } from '../Store/GameStore';
+
+import { player1, player2 } from "../Store/PlayerState";
+import { HeadHandler,GameStore,ChoseSameCampChess,Request,EatChess,MoveRule,MoveChess } from '../Store/GameStore';
 let AllChess = ref(null);
 
 // 取得play1、play2 的狀態
-let Play1State = ref(new Player1());
-let Play2State = ref(new Player2());
+let Play1State = ref(player1);
+let Play2State = ref(player2);
 // 取得當前玩家
 let currPlayer = computed(()=>{
     return Play1State.value.state == true ? Play1State.value : Play2State.value
@@ -50,10 +51,6 @@ let BackImageChess =
     ConcreteChessFlyweightFactory.GetResultChessImage("backImageChess");
 let FrontImageChess =
     ConcreteChessFlyweightFactory.GetResultChessImage("frontImageChess");
-// 取得玩家store、Context
-
-let ConcreteContextPlayer1 = new Context(Play1State.value);
-let ConcreteContextPlayer2 = new Context(Play2State.value);
 // 取得遊戲狀態
 let concreteGameStore = ref(new GameStore())
 // 規則(職責鏈)實體化
@@ -61,7 +58,7 @@ let concreteChoseSameCampChess = new ChoseSameCampChess()
 let ConcreteEatChess = new EatChess()
 let ConcreteMoveRules = new MoveRule()
 let ConcreteHeadHandler = new HeadHandler()
-
+let ConcreteMoveChess = new MoveChess()
 // concrete 遊戲中的職責鏈
 
 
@@ -74,10 +71,11 @@ const getChessUrl = (index, isOpenState) => {
         return FrontImageChess.operation(index);
     }
 };
+
 // 玩家交換
 const switchPlayer = () => {
-    ConcreteContextPlayer1.ConcreteSwitchPlayer();
-    ConcreteContextPlayer2.ConcreteSwitchPlayer();
+    Play1State.value.SwitchPlayer();
+    Play2State.value.SwitchPlayer();
 };
 
 // 點選棋子
@@ -89,7 +87,7 @@ const chessHandler = (chess,chessLocationIndex) => {
 };
 
 // 玩家選陣營(camp)
-const SetCamp = (chess,) => {
+const SetCamp = (chess) => {
     if (chess.belong == "red") {
         Play1State.value.SetCamp("red");
         Play2State.value.SetCamp("blue");
@@ -104,22 +102,25 @@ const SetCamp = (chess,) => {
 // 判斷玩家的陣營與所選是否相同及判斷chess.state
 const CompareCamp = (chess) => {
     // concrete 遊戲中的職責鏈
-    let GetRequest = new Request(currPlayer.value,chess,concreteGameStore.value,AllChess.value)
+    let GetRequest = new Request(currPlayer.value,chess,concreteGameStore.value,AllChess.value,switchPlayer)
     resetAllChessState()
-    
+   
+
     if(chess.state == 'close'){
         chess.ConcreteOpen();
         switchPlayer();
         concreteGameStore.value.ResetpreChooseChess()
         return
-    }
-
+    } 
+    
+    
     ConcreteHeadHandler.SetCondition(concreteChoseSameCampChess)
     concreteChoseSameCampChess.SetCondition(ConcreteMoveRules)
     ConcreteMoveRules.SetCondition(ConcreteEatChess)
+    ConcreteEatChess.SetCondition(ConcreteMoveChess)
 
     ConcreteHeadHandler.HandleRequest(GetRequest)
-   
+
 
 
 

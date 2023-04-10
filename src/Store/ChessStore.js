@@ -1,5 +1,5 @@
 import { v4 as RandomId } from "uuid";
-
+import { player1, player2 } from "../Store/PlayerState";
 // 方法工廠
 export class ChessInfo {
     constructor(value, quantity, rank, belong, imageIndex) {
@@ -20,14 +20,14 @@ export class ChessInfo {
     ConcreteOpen() {
         this.stage.Open();
     }
-    ConcreteMove(getAllChess) {
-        this.stage.Move(getAllChess);
+    ConcreteMove(currChess, getAllChess, switchPlayer) {
+        this.stage.Move(currChess, getAllChess, switchPlayer);
     }
     ConcreteBeingInvaded() {
         this.stage.BeingInvaded();
     }
-    ConcreteAggressive(preChess, getAllChess) {
-        this.stage.Aggressive(preChess, getAllChess);
+    ConcreteAggressive(preChess, getAllChess, switchPlayer, currPlayer) {
+        this.stage.Aggressive(preChess, getAllChess, switchPlayer, currPlayer);
     }
     ConCreteSetChoose() {
         this.stage.SetChoose();
@@ -59,6 +59,7 @@ export class createChessInfoFactory {
     CreateChessInfo() {}
 }
 
+// 抽成設定檔(config)(Ex. 將 -> kingBlue 由設定檔決定，能在改動時不碰到程式碼)
 export class KingChessInfo extends createChessInfoFactory {
     CreateBlueChessInfo() {
         return new ChessInfo("將", 1, 1, "blue", 1);
@@ -109,7 +110,7 @@ export class CannonChessInfo extends createChessInfoFactory {
         return new ChessInfo("炮", 2, 6, "blue", 6);
     }
     CreateRedChessInfo() {
-        return new ChessInfo("砲", 4, 7, "red", 13);
+        return new ChessInfo("砲", 4, 6, "red", 13);
     }
 }
 
@@ -138,10 +139,12 @@ class Stage {
 export class ChessCloseStage extends Stage {
     constructor(chess) {
         super();
+
         this.chess = chess;
     }
     Open() {
         this.chess.state = "open";
+
         this.chess.ConcreteSetStage(new ChessOpenStage(this.chess));
     }
     Move() {
@@ -166,28 +169,37 @@ export class ChessOpenStage extends Stage {
         super();
         this.chess = chess;
     }
+
     Open() {
         console.log("已經打開了");
     }
-    Move(targetChess, compareChess) {
-        let temp = this.imageIndexArr[compareChess];
-        this.imageIndexArr[compareChess] = this.imageIndexArr[targetChess];
-        this.imageIndexArr[targetChess] = temp;
+
+    Move(currChess, getAllChess, switchPlayer) {
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == currChess.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+
+        let temp = getAllChess[PreChessIndex];
+        getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
+        getAllChess[CurrChessResultIndex] = temp;
+        console.log("移動");
+        switchPlayer();
     }
     BeingInvaded() {
         console.log("被佔領");
     }
-    Aggressive(preChess, getAllChess) {
-        if (this.chess.rank > preChess.rank) {
-            let PreChessIndex = getAllChess.findIndex((item) => item.id == preChess.id);
-            let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
-            console.log(getAllChess[PreChessIndex]);
-            console.log(getAllChess[CurrChessResultIndex]);
-            let temp = getAllChess[PreChessIndex];
-            getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
-            getAllChess[CurrChessResultIndex] = temp;
+    Aggressive(preChess, getAllChess, switchPlayer, currPlayer) {
+        // if (preChess.rank == 6) {
+        //     console.log("a");
+        //     this.chess.ConcreteSetStage(new ChessCannonStage(this.chess));
+        //     this.BeingInvaded();
+        //     return;
+        // }
+
+        if (this.chess.rank >= preChess.rank) {
+            this.Move(preChess, getAllChess, switchPlayer);
             this.chess.state = "none";
             this.chess.ConcreteSetStage(new ChessNoneStage(this.chess));
+            currPlayer.SetScore();
         } else {
             alert("Cannot eat a chess piece bigger than oneself");
         }
@@ -198,9 +210,42 @@ export class ChessOpenStage extends Stage {
     ResetChoose() {
         this.chess.isChoose = false;
     }
+    SetStage(context) {
+        this.chess.stage = context;
+    }
 }
+// Cannon
+export class ChessCannonStage extends Stage {
+    constructor(chess) {
+        super();
+        this.chess = chess;
+    }
+    SetChoose() {
+        console.log("none");
+    }
+    Open() {
+        console.log("none");
+    }
+    Move() {
+        console.log("Move none");
+    }
+    BeingInvaded() {
+        console.log("none");
+    }
+    Aggressive() {
+        console.log("我是泡");
+    }
+}
+
 // none
 export class ChessNoneStage extends Stage {
+    constructor(chess) {
+        super();
+        this.chess = chess;
+    }
+    SetChoose() {
+        console.log("none");
+    }
     Open() {
         console.log("none");
     }

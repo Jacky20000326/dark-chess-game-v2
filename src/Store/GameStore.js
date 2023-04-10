@@ -27,11 +27,12 @@ export class GameStore {
 }
 
 export class Request {
-    constructor(currPlayer, currChess, gameState, AllChessArr) {
+    constructor(currPlayer, currChess, gameState, AllChessArr, switchPlayer) {
         this.currPlayer = currPlayer;
         this.currChess = currChess;
         this.gameState = gameState;
         this.AllChessArr = AllChessArr;
+        this.switchPlayer = switchPlayer;
     }
 }
 
@@ -97,10 +98,27 @@ export class EatChess extends Handler {
     HandleRequest(request) {
         if (request.currChess.state == "open") {
             let preChess = request.gameState.preChooseChess;
-            request.currChess.ConcreteAggressive(preChess, request.AllChessArr);
+            request.currChess.ConcreteAggressive(
+                preChess,
+                request.AllChessArr,
+                request.switchPlayer,
+                request.currPlayer
+            );
+            request.gameState.ResetpreChooseChess();
         } else {
             this.condition.HandleRequest(request);
         }
+    }
+}
+
+export class MoveChess extends Handler {
+    HandleRequest(request) {
+        // let preChess = request.gameState.preChooseChess;
+        // request.currChess.ConcreteMove(preChess, request.AllChessArr, request.switchPlayer);
+        // request.gameState.preChooseChess.ConcreteMove(preChess, request.AllChessArr, request.switchPlayer);
+        request.gameState.preChooseChess.ConcreteMove(request.currChess, request.AllChessArr, request.switchPlayer);
+        // console.log(request.gameState.preChooseChess);
+        request.gameState.ResetpreChooseChess();
     }
 }
 

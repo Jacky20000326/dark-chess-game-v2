@@ -6,7 +6,7 @@
             :class="[{ play1Flag: Play1State.state }]"
             
         >
-            Play1 : 0
+            Play1 : {{ Play1State.score }}
             <div class="player1-cube" :style="{ backgroundColor: Play1State.camp }"></div>
         </div>
 
@@ -15,7 +15,7 @@
             :class="[{ play2Flag: Play2State.state }]"
             
         >
-            0: Play2
+        {{ Play2State.score }} : Play2
             <div class="player2-cube" :style="{ backgroundColor: Play2State.camp }"></div>
         </div>
     </div>
