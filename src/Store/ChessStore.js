@@ -13,7 +13,15 @@ export class ChessInfo {
         this.belong = belong;
         this.isChoose = false;
     }
+    MoveAction(currChess, getAllChess) {
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == this.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == currChess.id);
 
+        let temp = getAllChess[PreChessIndex];
+        getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
+        getAllChess[CurrChessResultIndex] = temp;
+        console.log("移動");
+    }
     ConcreteSetStage(context) {
         this.stage.SetStage(context);
     }
@@ -26,8 +34,8 @@ export class ChessInfo {
     ConcreteBeingInvaded() {
         this.stage.BeingInvaded();
     }
-    ConcreteAggressive(preChess, getAllChess, switchPlayer, currPlayer) {
-        this.stage.Aggressive(preChess, getAllChess, switchPlayer, currPlayer);
+    ConcreteAggressive(currChess, getAllChess, switchPlayer, currPlayer) {
+        this.stage.Aggressive(currChess, getAllChess, switchPlayer, currPlayer);
     }
     ConCreteSetChoose() {
         this.stage.SetChoose();
@@ -175,45 +183,51 @@ export class ChessOpenStage extends Stage {
     }
 
     Move(currChess, getAllChess, switchPlayer) {
-        let PreChessIndex = getAllChess.findIndex((item) => item.id == currChess.id);
-        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == currChess.id);
 
-        let temp = getAllChess[PreChessIndex];
-        getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
-        getAllChess[CurrChessResultIndex] = temp;
-        console.log("移動");
-        switchPlayer();
+        let topChessIndex = CurrChessResultIndex + 1 - 8;
+        let downChessIndex = CurrChessResultIndex + 1 + 8;
+        let rightChessIndex = CurrChessResultIndex + 1 + 1;
+        let leftChessIndex = CurrChessResultIndex + 1 - 1;
+        if (
+            PreChessIndex + 1 == topChessIndex ||
+            PreChessIndex + 1 == downChessIndex ||
+            PreChessIndex + 1 == rightChessIndex ||
+            PreChessIndex + 1 == leftChessIndex
+        ) {
+            this.chess.MoveAction(currChess, getAllChess);
+            switchPlayer();
+        } else {
+            alert("Cannot move");
+            return;
+        }
     }
     BeingInvaded() {
         console.log("被佔領");
     }
-    Aggressive(preChess, getAllChess, switchPlayer, currPlayer) {
-        // if (preChess.rank == 6) {
-        //     console.log("a");
-        //     this.chess.ConcreteSetStage(new ChessCannonStage(this.chess));
-        //     this.BeingInvaded();
-        //     return;
-        // }
-        if (preChess.rank == 6) {
-            preChess.ConcreteSetStage(new ChessCannonStage(this.chess));
-            preChess.ConcreteAggressive(preChess, getAllChess, switchPlayer, currPlayer);
+    Aggressive(currChess, getAllChess, switchPlayer, currPlayer) {
+        // 將(帥)兵(卒)規則 // 若為六可以吃
+        let result = currChess.rank - this.chess.rank == 6 ? "cannotAggressive" : "Aggressive";
+        if (result == "cannotAggressive") {
+            alert("Cannot eat a chess piece bigger than oneself");
             return;
         }
 
-        if (this.chess.rank >= preChess.rank) {
-            this.Move(preChess, getAllChess, switchPlayer);
-            this.chess.state = "none";
-            this.chess.ConcreteSetStage(new ChessNoneStage(this.chess));
+        if (currChess.rank >= this.chess.rank || result == -6) {
+            this.Move(currChess, getAllChess, switchPlayer);
+            currChess.state = "none";
+            currChess.ConcreteSetStage(new ChessNoneStage(this.chess));
             currPlayer.SetScore();
-        } else {
-            alert("Cannot eat a chess piece bigger than oneself");
+            return;
         }
+        alert("Cannot eat a chess piece bigger than oneself");
     }
     SetChoose() {
         if (this.chess.rank == 6) {
             this.chess.ConcreteSetStage(new ChessCannonStage(this.chess));
         }
-        console.log(this.chess);
+
         this.chess.isChoose = true;
     }
     ResetChoose() {
@@ -232,23 +246,38 @@ export class ChessCannonStage extends Stage {
     SetChoose() {
         console.log("none");
     }
-    Open() {}
+    Open() {
+        console.log("cannon open");
+    }
     Move(currChess, getAllChess, switchPlayer) {
-        let PreChessIndex = getAllChess.findIndex((item) => item.id == currChess.id);
-        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == currChess.id);
 
-        let temp = getAllChess[PreChessIndex];
-        getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
-        getAllChess[CurrChessResultIndex] = temp;
-        console.log("砲移動");
-        switchPlayer();
+        let topChessIndex = CurrChessResultIndex + 1 - 8;
+        let downChessIndex = CurrChessResultIndex + 1 + 8;
+        let rightChessIndex = CurrChessResultIndex + 1 + 1;
+        let leftChessIndex = CurrChessResultIndex + 1 - 1;
+        if (
+            PreChessIndex + 1 == topChessIndex ||
+            PreChessIndex + 1 == downChessIndex ||
+            PreChessIndex + 1 == rightChessIndex ||
+            PreChessIndex + 1 == leftChessIndex
+        ) {
+            this.chess.MoveAction(currChess, getAllChess);
+            switchPlayer();
+        } else {
+            alert("Cannot move");
+            return;
+        }
     }
     BeingInvaded() {
         console.log("none");
     }
-    Aggressive(preChess, getAllChess, switchPlayer, currPlayer) {
-        let PreChessIndex = getAllChess.findIndex((item) => item.id == preChess.id);
-        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+    Aggressive(currChess, getAllChess, switchPlayer, currPlayer) {
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == currChess.id);
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        console.log(currChess);
+        console.log(this.chess);
         // 紀錄砲台數量
         let isOneChessInBetween = 0;
         // 砲的排數
@@ -259,46 +288,57 @@ export class ChessCannonStage extends Stage {
         // 確認是否是與砲垂直的棋子，若為0則垂直
         let isVertical = Math.abs(CurrChessResultIndex - PreChessIndex) % 8;
 
-        if ((CurrChessResultIndex <= 7 && PreChessIndex > 7) || (PreChessIndex <= 7 && CurrChessResultIndex > 7)) {
-            if (compareHorizontalIndex == targetHorizontalIndex) {
-                for (var i = 1; i <= Math.abs(CurrChessResultIndex - PreChessIndex) - 1; i++) {
-                    if (getAllChess[Math.min(CurrChessResultIndex, PreChessIndex) + i]?.state == 1) {
-                        isOneChessInBetween++;
-                    }
+        // if ((CurrChessResultIndex <= 7 && PreChessIndex > 7) || (PreChessIndex <= 7 && CurrChessResultIndex > 7)) {
+        // 若為平行
+        if (compareHorizontalIndex == targetHorizontalIndex) {
+            for (var i = 1; i <= Math.abs(CurrChessResultIndex - PreChessIndex) - 1; i++) {
+                if (getAllChess[Math.min(CurrChessResultIndex, PreChessIndex) + i].state == "open") {
+                    isOneChessInBetween++;
                 }
-
-                if (isOneChessInBetween == 1) {
-                    this.Move(preChess, getAllChess, switchPlayer);
-                    this.chess.state = "none";
-                }
-
-                alert("砲不能這樣走喔～");
             }
-            if (!isVertical) {
-                if (
-                    Math.max(CurrChessResultIndex, PreChessIndex) - Math.min(CurrChessResultIndex, PreChessIndex) / 8 >=
-                    2
-                ) {
-                    for (
-                        var i = Math.min(CurrChessResultIndex, PreChessIndex) + 8;
-                        i < Math.max(CurrChessResultIndex, PreChessIndex);
-                        i += 8
-                    ) {
-                        if (getAllChess[i]?.state == 1) {
-                            isOneChessInBetween++;
-                        }
-                    }
-                    if (isOneChessInBetween == 1 && getAllChess[CurrChessResultIndex]?.state) {
-                        this.Move(preChess, getAllChess, switchPlayer);
-                        this.chess.state = "none";
-                    } else {
-                        alert("砲不能這樣走喔～");
-                    }
-                }
+
+            if (isOneChessInBetween == 1) {
+                this.chess.MoveAction(currChess, getAllChess);
+                switchPlayer();
+                currChess.state = "none";
+                currPlayer.SetScore();
+
+                return;
             }
 
             alert("砲不能這樣走喔～");
+            return;
         }
+        // 若為垂直
+        if (isVertical == 0) {
+            if (
+                Math.max(CurrChessResultIndex, PreChessIndex) - Math.min(CurrChessResultIndex, PreChessIndex) / 8 >=
+                2
+            ) {
+                for (
+                    var i = Math.min(CurrChessResultIndex, PreChessIndex) + 8;
+                    i < Math.max(CurrChessResultIndex, PreChessIndex);
+                    i += 8
+                ) {
+                    if (getAllChess[i].state == "open") {
+                        isOneChessInBetween++;
+                    }
+                }
+                if (isOneChessInBetween == 1 && getAllChess[CurrChessResultIndex].state == "open") {
+                    this.chess.MoveAction(currChess, getAllChess);
+                    switchPlayer();
+                    currChess.state = "none";
+                    currPlayer.SetScore();
+                } else {
+                    alert("砲不能這樣走喔～");
+                }
+            }
+            return;
+        }
+
+        alert("砲不能這樣走喔～");
+        // }
+        // console.log("cc");
     }
     SetChoose() {
         this.chess.isChoose = true;

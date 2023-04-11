@@ -9,7 +9,6 @@
                     class="chessboard-block"
                     :key="index"
                     @click="chessHandler(item)"
-                   
                 >
                     <img
                         v-show="item.state != 'none'"
@@ -35,7 +34,7 @@ import { ChessFlyweightFactory } from "../Store/ChessImageStore.js";
 import { onBeforeMount, ref,computed } from "vue";
 
 import { player1, player2 } from "../Store/PlayerState";
-import { HeadHandler,GameStore,ChoseSameCampChess,Request,EatChess,MoveRule,MoveChess } from '../Store/GameStore';
+import { HeadHandler,GameStore,ChoseSameCampChess,Request,EatChess,MoveChess } from '../Store/GameStore';
 let AllChess = ref(null);
 
 // 取得play1、play2 的狀態
@@ -56,7 +55,6 @@ let concreteGameStore = ref(new GameStore())
 // 規則(職責鏈)實體化
 let concreteChoseSameCampChess = new ChoseSameCampChess()
 let ConcreteEatChess = new EatChess()
-let ConcreteMoveRules = new MoveRule()
 let ConcreteHeadHandler = new HeadHandler()
 let ConcreteMoveChess = new MoveChess()
 // concrete 遊戲中的職責鏈
@@ -104,7 +102,6 @@ const CompareCamp = (chess) => {
     // concrete 遊戲中的職責鏈
     let GetRequest = new Request(currPlayer.value,chess,concreteGameStore.value,AllChess.value,switchPlayer)
     resetAllChessState()
-   
 
     if(chess.state == 'close'){
         chess.ConcreteOpen();
@@ -115,8 +112,7 @@ const CompareCamp = (chess) => {
     
     
     ConcreteHeadHandler.SetCondition(concreteChoseSameCampChess)
-    concreteChoseSameCampChess.SetCondition(ConcreteMoveRules)
-    ConcreteMoveRules.SetCondition(ConcreteEatChess)
+    concreteChoseSameCampChess.SetCondition(ConcreteEatChess)
     ConcreteEatChess.SetCondition(ConcreteMoveChess)
 
     ConcreteHeadHandler.HandleRequest(GetRequest)
