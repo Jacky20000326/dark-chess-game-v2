@@ -57,6 +57,8 @@ export class ChoseSameCampChess extends Handler {
         }
         if (request.currPlayer.camp !== request.currChess.belong) {
             alert(`please pick ${request.currPlayer.camp} color chess,thanks.`);
+        } else if (request.currChess.state == "none") {
+            alert("There is no chess.");
         } else {
             // 互叫選取狀態
             request.currChess.ConCreteSetChoose();
@@ -113,11 +115,7 @@ export class EatChess extends Handler {
 
 export class MoveChess extends Handler {
     HandleRequest(request) {
-        // let preChess = request.gameState.preChooseChess;
-        // request.currChess.ConcreteMove(preChess, request.AllChessArr, request.switchPlayer);
-        // request.gameState.preChooseChess.ConcreteMove(preChess, request.AllChessArr, request.switchPlayer);
         request.gameState.preChooseChess.ConcreteMove(request.currChess, request.AllChessArr, request.switchPlayer);
-        // console.log(request.gameState.preChooseChess);
         request.gameState.ResetpreChooseChess();
     }
 }

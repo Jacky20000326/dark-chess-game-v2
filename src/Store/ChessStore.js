@@ -194,6 +194,11 @@ export class ChessOpenStage extends Stage {
         //     this.BeingInvaded();
         //     return;
         // }
+        if (preChess.rank == 6) {
+            preChess.ConcreteSetStage(new ChessCannonStage(this.chess));
+            preChess.ConcreteAggressive(preChess, getAllChess, switchPlayer, currPlayer);
+            return;
+        }
 
         if (this.chess.rank >= preChess.rank) {
             this.Move(preChess, getAllChess, switchPlayer);
@@ -205,6 +210,10 @@ export class ChessOpenStage extends Stage {
         }
     }
     SetChoose() {
+        if (this.chess.rank == 6) {
+            this.chess.ConcreteSetStage(new ChessCannonStage(this.chess));
+        }
+        console.log(this.chess);
         this.chess.isChoose = true;
     }
     ResetChoose() {
@@ -223,17 +232,82 @@ export class ChessCannonStage extends Stage {
     SetChoose() {
         console.log("none");
     }
-    Open() {
-        console.log("none");
-    }
-    Move() {
-        console.log("Move none");
+    Open() {}
+    Move(currChess, getAllChess, switchPlayer) {
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == currChess.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+
+        let temp = getAllChess[PreChessIndex];
+        getAllChess[PreChessIndex] = getAllChess[CurrChessResultIndex];
+        getAllChess[CurrChessResultIndex] = temp;
+        console.log("砲移動");
+        switchPlayer();
     }
     BeingInvaded() {
         console.log("none");
     }
-    Aggressive() {
-        console.log("我是泡");
+    Aggressive(preChess, getAllChess, switchPlayer, currPlayer) {
+        let PreChessIndex = getAllChess.findIndex((item) => item.id == preChess.id);
+        let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
+        // 紀錄砲台數量
+        let isOneChessInBetween = 0;
+        // 砲的排數
+        let compareHorizontalIndex = Math.floor(PreChessIndex / 8);
+        // 目標的排數
+        let targetHorizontalIndex = Math.floor(CurrChessResultIndex / 8);
+
+        // 確認是否是與砲垂直的棋子，若為0則垂直
+        let isVertical = Math.abs(CurrChessResultIndex - PreChessIndex) % 8;
+
+        if ((CurrChessResultIndex <= 7 && PreChessIndex > 7) || (PreChessIndex <= 7 && CurrChessResultIndex > 7)) {
+            if (compareHorizontalIndex == targetHorizontalIndex) {
+                for (var i = 1; i <= Math.abs(CurrChessResultIndex - PreChessIndex) - 1; i++) {
+                    if (getAllChess[Math.min(CurrChessResultIndex, PreChessIndex) + i]?.state == 1) {
+                        isOneChessInBetween++;
+                    }
+                }
+
+                if (isOneChessInBetween == 1) {
+                    this.Move(preChess, getAllChess, switchPlayer);
+                    this.chess.state = "none";
+                }
+
+                alert("砲不能這樣走喔～");
+            }
+            if (!isVertical) {
+                if (
+                    Math.max(CurrChessResultIndex, PreChessIndex) - Math.min(CurrChessResultIndex, PreChessIndex) / 8 >=
+                    2
+                ) {
+                    for (
+                        var i = Math.min(CurrChessResultIndex, PreChessIndex) + 8;
+                        i < Math.max(CurrChessResultIndex, PreChessIndex);
+                        i += 8
+                    ) {
+                        if (getAllChess[i]?.state == 1) {
+                            isOneChessInBetween++;
+                        }
+                    }
+                    if (isOneChessInBetween == 1 && getAllChess[CurrChessResultIndex]?.state) {
+                        this.Move(preChess, getAllChess, switchPlayer);
+                        this.chess.state = "none";
+                    } else {
+                        alert("砲不能這樣走喔～");
+                    }
+                }
+            }
+
+            alert("砲不能這樣走喔～");
+        }
+    }
+    SetChoose() {
+        this.chess.isChoose = true;
+    }
+    ResetChoose() {
+        this.chess.isChoose = false;
+    }
+    SetStage(context) {
+        this.chess.stage = context;
     }
 }
 
@@ -244,7 +318,7 @@ export class ChessNoneStage extends Stage {
         this.chess = chess;
     }
     SetChoose() {
-        console.log("none");
+        console.log("There is no chess.");
     }
     Open() {
         console.log("none");
