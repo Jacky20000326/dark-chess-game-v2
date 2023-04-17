@@ -34,8 +34,8 @@ export class ChessInfo {
     ConcreteBeingInvaded() {
         this.stage.BeingInvaded();
     }
-    ConcreteAggressive(currChess, getAllChess, switchPlayer, currPlayer) {
-        this.stage.Aggressive(currChess, getAllChess, switchPlayer, currPlayer);
+    ConcreteAggressive(currChess, getAllChess, switchPlayer, currPlayer, gameState) {
+        this.stage.Aggressive(currChess, getAllChess, switchPlayer, currPlayer, gameState);
     }
     ConCreteSetChoose() {
         this.stage.SetChoose();
@@ -206,19 +206,21 @@ export class ChessOpenStage extends Stage {
     BeingInvaded() {
         console.log("被佔領");
     }
-    Aggressive(currChess, getAllChess, switchPlayer, currPlayer) {
+    Aggressive(currChess, getAllChess, switchPlayer, currPlayer, gameState) {
         // 將(帥)兵(卒)規則 // 若為六可以吃
-        let result = currChess.rank - this.chess.rank == 6 ? "cannotAggressive" : "Aggressive";
-        if (result == "cannotAggressive") {
+        let result;
+        result = currChess.rank - this.chess.rank == 6 ? "kingCannotAggressive" : "kingAggressive";
+        result = currChess.rank - this.chess.rank == -6 ? "PawnAggressive" : "PawncannotAggressive";
+        if (result == "kingCannotAggressive") {
             alert("Cannot eat a chess piece bigger than oneself");
             return;
         }
 
-        if (currChess.rank >= this.chess.rank || result == -6) {
+        if (currChess.rank >= this.chess.rank || result == "PawnAggressive") {
             this.Move(currChess, getAllChess, switchPlayer);
             currChess.state = "none";
             currChess.ConcreteSetStage(new ChessNoneStage(this.chess));
-            currPlayer.SetScore();
+            currPlayer.SetScore(gameState.SetWinner);
             return;
         }
         alert("Cannot eat a chess piece bigger than oneself");
@@ -273,7 +275,7 @@ export class ChessCannonStage extends Stage {
     BeingInvaded() {
         console.log("none");
     }
-    Aggressive(currChess, getAllChess, switchPlayer, currPlayer) {
+    Aggressive(currChess, getAllChess, switchPlayer, currPlayer, gameState) {
         let CurrChessResultIndex = getAllChess.findIndex((item) => item.id == currChess.id);
         let PreChessIndex = getAllChess.findIndex((item) => item.id == this.chess.id);
         console.log(currChess);
@@ -301,7 +303,7 @@ export class ChessCannonStage extends Stage {
                 this.chess.MoveAction(currChess, getAllChess);
                 switchPlayer();
                 currChess.state = "none";
-                currPlayer.SetScore();
+                currPlayer.SetScore(gameState.SetWinner);
 
                 return;
             }
@@ -328,7 +330,7 @@ export class ChessCannonStage extends Stage {
                     this.chess.MoveAction(currChess, getAllChess);
                     switchPlayer();
                     currChess.state = "none";
-                    currPlayer.SetScore();
+                    currPlayer.SetScore(gameState.SetWinner);
                 } else {
                     alert("砲不能這樣走喔～");
                 }

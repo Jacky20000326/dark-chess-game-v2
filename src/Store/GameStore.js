@@ -15,15 +15,21 @@ export class GameStore {
         this.preChooseChess = null;
     }
     MoveCount(state) {
-        if (this.count == 5) {
-            this.winner = "平局";
-        }
-        if (state == 1) {
-            this.count += 1;
+        let DrawChess = 50;
+        if (state == "ReSetCount") {
+            this.count = 0;
             return;
         }
-        this.count = 0;
+        if (state == "AddCount") {
+            this.count += 1;
+        }
+        if (this.count == DrawChess) {
+            this.winner = "平局";
+        }
     }
+    SetWinner = (winner) => {
+        this.winner = winner;
+    };
 }
 
 export class Request {
@@ -68,34 +74,6 @@ export class ChoseSameCampChess extends Handler {
     }
 }
 
-// export class MoveRule extends Handler {
-//     HandleRequest(request) {
-//         let CurrChessId = request.currChess.id;
-//         let PreChessId = request.gameState.preChooseChess.id;
-
-//         let CurrPreChessIndex = request.AllChessArr.findIndex((item) => item.id == PreChessId);
-//         let CurrChessResultIndex = request.AllChessArr.findIndex((item) => item.id == CurrChessId);
-
-//         let topChessIndex = CurrChessResultIndex + 1 - 8;
-//         let downChessIndex = CurrChessResultIndex + 1 + 8;
-//         let rightChessIndex = CurrChessResultIndex + 1 + 1;
-//         let leftChessIndex = CurrChessResultIndex + 1 - 1;
-//         if (
-//             CurrPreChessIndex + 1 == topChessIndex ||
-//             CurrPreChessIndex + 1 == downChessIndex ||
-//             CurrPreChessIndex + 1 == rightChessIndex ||
-//             CurrPreChessIndex + 1 == leftChessIndex
-//         ) {
-//             this.condition.HandleRequest(request);
-//             console.log("規則正確");
-//         } else {
-//             request.gameState.ResetpreChooseChess();
-//             alert("Cannot move");
-//         }
-//         this.condition.HandleRequest();
-//     }
-// }
-
 export class EatChess extends Handler {
     HandleRequest(request) {
         if (request.currChess.state == "open") {
@@ -103,9 +81,11 @@ export class EatChess extends Handler {
                 request.currChess,
                 request.AllChessArr,
                 request.switchPlayer,
-                request.currPlayer
+                request.currPlayer,
+                request.gameState
             );
             request.gameState.ResetpreChooseChess();
+            request.gameState.MoveCount("ReSetCount");
         } else {
             this.condition.HandleRequest(request);
         }
@@ -116,6 +96,7 @@ export class MoveChess extends Handler {
     HandleRequest(request) {
         request.gameState.preChooseChess.ConcreteMove(request.currChess, request.AllChessArr, request.switchPlayer);
         request.gameState.ResetpreChooseChess();
+        request.gameState.MoveCount("AddCount");
     }
 }
 

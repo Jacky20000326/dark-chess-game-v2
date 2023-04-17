@@ -19,15 +19,17 @@
                 </div>
             </div>
         </div>
-        <Player />
-        <div class="stepCount" @click="switchPlayer">{{ 0 }}</div>
-        <FinishGame :Play1State="Play1State" :Play2State="Play2State" />
+
+        <div class="stepCount" @click="switchPlayer">{{ concreteGameStore.count }}</div>
+        <Player  :Play1State="Play1State" :Play2State="Play2State" />
+        <FinishGame v-if="concreteGameStore.winner " :GameState = "concreteGameStore" />
         <button @click="resetAllChessState">resetState</button>
     </div>
 </template>
 
 <script setup>
-import FinishGame from "./Player.vue";
+import Player from "./Player.vue";
+import FinishGame from "./FinishGame.vue";
 import { initChessInfo } from "../Store/initChess";
 import { ChessFlyweightFactory } from "../Store/ChessImageStore.js";
 // import { ChessCloseState } from "../Store/ChessStore";
@@ -70,6 +72,8 @@ const getChessUrl = (index, isOpenState) => {
     }
 };
 
+
+
 // 玩家交換
 const switchPlayer = () => {
     Play1State.value.SwitchPlayer();
@@ -77,10 +81,10 @@ const switchPlayer = () => {
 };
 
 // 點選棋子
-const chessHandler = (chess,chessLocationIndex) => {
+const chessHandler = (chess) => {
     // 取得首次玩家camp
     SetCamp(chess);
-    CompareCamp(chess,chessLocationIndex)
+    CompareCamp(chess,)
 
 };
 
@@ -107,6 +111,7 @@ const CompareCamp = (chess) => {
         chess.ConcreteOpen();
         switchPlayer();
         concreteGameStore.value.ResetpreChooseChess()
+        concreteGameStore.value.MoveCount("ReSetCount");
         return
     } 
     
@@ -114,7 +119,6 @@ const CompareCamp = (chess) => {
     ConcreteHeadHandler.SetCondition(concreteChoseSameCampChess)
     concreteChoseSameCampChess.SetCondition(ConcreteEatChess)
     ConcreteEatChess.SetCondition(ConcreteMoveChess)
-
     ConcreteHeadHandler.HandleRequest(GetRequest)
 
 

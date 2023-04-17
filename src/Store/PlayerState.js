@@ -7,8 +7,13 @@ export class PlayerStore {
         if (this.camp != null) return;
         this.camp = camp;
     }
-    SetScore() {
+    SetScore(setWinner) {
         this.score += 1;
+        if (this.score == 1) {
+            setWinner(this.camp);
+            return;
+        }
+        console.log(`${this.camp}:${this.score}`);
     }
     SwitchPlayer() {
         this.state = !this.state;
